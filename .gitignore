@@ -1,0 +1,28 @@
+# Unreal Engine 5 .gitignore
+# Exclude the generated and saved files
+
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+
+# VS/VSCode/Rider generated files
+.vs/
+.idea/
+*.sln
+*.suo
+*.opensdf
+*.sdf
+*.VC.db
+*.VC.opendb
+
+# macOS/OSX
+.DS_Store
+
+# Include the Plugins folder but exclude binaries and intermediate
+Plugins/*/Binaries/
+Plugins/*/Intermediate/
+
+# Specifically ignore specific files that might be generated in the root
+*.log
+*.dmp
