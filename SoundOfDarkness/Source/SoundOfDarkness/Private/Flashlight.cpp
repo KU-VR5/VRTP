@@ -1,7 +1,9 @@
 #include "Flashlight.h"
 #include "Components/SpotLightComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "GhostCharacter.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "TimerManager.h"
 
 AFlashlight::AFlashlight()
 {
@@ -20,6 +22,8 @@ AFlashlight::AFlashlight()
 void AFlashlight::BeginPlay()
 {
 	Super::BeginPlay();
+	RemainingUses = MaxUses;
+	FlashlightLight->SetVisibility(bIsOn);
 }
 
 void AFlashlight::Tick(float DeltaTime)
@@ -34,8 +38,25 @@ void AFlashlight::Tick(float DeltaTime)
 
 void AFlashlight::ToggleLight()
 {
-	bIsOn = !bIsOn;
+	if (bIsOn)
+	{
+		bIsOn = false;
+		FlashlightLight->SetVisibility(false);
+		return;
+	}
+
+	if (RemainingUses <= 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Flashlight has no uses remaining."));
+		return;
+	}
+
+	--RemainingUses;
+	bIsOn = true;
 	FlashlightLight->SetVisibility(bIsOn);
+	GetWorldTimerManager().SetTimerForNextTick(this, &AFlashlight::CheckForGhostInLight);
+	FTimerHandle OffTimerHandle;
+	GetWorldTimerManager().SetTimer(OffTimerHandle, this, &AFlashlight::TurnOffAfterUse, UseDuration, false);
 	UE_LOG(LogTemp, Log, TEXT("Flashlight Toggled: %s"), bIsOn ? TEXT("ON") : TEXT("OFF"));
 }
 
@@ -51,26 +72,43 @@ void AFlashlight::CheckForGhostInLight()
 	ActorsToIgnore.Add(this);
 	ActorsToIgnore.Add(GetOwner());
 
-	FHitResult HitResult;
+	TArray<FHitResult> HitResults;
 
-	// Use a simple line trace first to find targets
-	bool bHit = UKismetSystemLibrary::LineTraceSingle(
+	bool bHit = UKismetSystemLibrary::SphereTraceMulti(
 		this, Start, End,
+		TraceRadius,
 		UEngineTypes::ConvertToTraceType(ECC_WorldDynamic),
 		false, ActorsToIgnore,
-		EDrawDebugTrace::None, HitResult, true
+		EDrawDebugTrace::None, HitResults, true
 	);
 
-	if (bHit && HitResult.GetActor())
+	if (!bHit) return;
+
+	for (const FHitResult& HitResult : HitResults)
 	{
-		// We found something! Check if it's the Ghost.
-		// (Assume Ghost will have a Tag "Ghost" for now)
-		if (HitResult.GetActor()->ActorHasTag(FName("Ghost")))
+		AActor* HitActor = HitResult.GetActor();
+		if (!HitActor) continue;
+
+		if (AGhostCharacter* Ghost = Cast<AGhostCharacter>(HitActor))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("GHOST STUNNED BY FLASHLIGHT!"));
-			
-			// Here we would call a function on the Ghost AI to stop it.
-			// e.g., HitResult.GetActor()->SetActorTickEnabled(false); or a custom Interface.
+			Ghost->StunGhost(StunDuration);
+			return;
+		}
+
+		if (HitActor->ActorHasTag(FName("Ghost")))
+		{
+			if (AGhostCharacter* Ghost = Cast<AGhostCharacter>(HitActor))
+			{
+				Ghost->StunGhost(StunDuration);
+				return;
+			}
 		}
 	}
+}
+
+void AFlashlight::TurnOffAfterUse()
+{
+	bIsOn = false;
+	FlashlightLight->SetVisibility(false);
 }

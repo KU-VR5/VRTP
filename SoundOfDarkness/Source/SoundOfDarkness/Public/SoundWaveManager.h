@@ -57,6 +57,39 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Echolocation")
     bool GetHighestPrioritySound(FVector& OutLocation, int32& OutPriority) const;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Echolocation|Visual")
+    bool bDrawDebugRipples = false;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Echolocation|Visual")
+    bool bDrawEchoOutlines = true;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Echolocation|Visual")
+    float DebugRingHeightOffset = 8.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Echolocation|Visual")
+    float DebugRingThickness = 6.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Echolocation|Visual")
+    int32 OutlineRayCount = 144;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Echolocation|Visual")
+    int32 OutlineVerticalSamples = 5;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Echolocation|Visual")
+    float OutlineSampleHeight = 80.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Echolocation|Visual")
+    float OutlineVerticalSpan = 180.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Echolocation|Visual")
+    float OutlineStrokeLength = 55.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Echolocation|Visual")
+    float OutlineThickness = 2.5f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Echolocation|Visual")
+    float OutlineLifetime = 0.08f;
+
 protected:
     UPROPERTY()
     UMaterialParameterCollection* EcholocationMPC;
@@ -66,4 +99,7 @@ private:
     FSoundWaveRipple ActiveWaves[MAX_WAVES];
 
     void UpdateMaterialParameters();
+    void DrawDebugRipples() const;
+    void DrawEchoOutlines() const;
+    FColor GetWaveColor(const FSoundWaveRipple& Wave) const;
 };

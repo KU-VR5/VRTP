@@ -22,11 +22,22 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AI|Ghost")
 	void StunGhost(float StunDuration);
 
+	UFUNCTION(BlueprintCallable, Category = "AI|Ghost")
+	bool IsStunned() const { return bIsStunned; }
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI|Ghost")
 	bool bIsStunned = false;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Ghost")
+	float CatchDistance = 120.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Ghost")
+	bool bCanCatchPlayer = true;
+
 private:
 	FTimerHandle StunTimerHandle;
+	float OriginalMaxWalkSpeed = 0.0f;
 
 	void EndStun();
+	void CheckCatchPlayer();
 };

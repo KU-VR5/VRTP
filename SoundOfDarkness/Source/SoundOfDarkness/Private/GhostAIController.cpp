@@ -51,6 +51,7 @@ void AGhostAIController::PollSoundWaves()
         {
             // Update the Blackboard with the coordinate so the Behavior Tree moves the ghost there!
             BlackboardComp->SetValueAsVector(TargetLocationKeyName, TargetLoc);
+            MoveToLocation(TargetLoc, AcceptanceRadius, true, true, true, false, nullptr, true);
         }
     }
 }
