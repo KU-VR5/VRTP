@@ -26,11 +26,15 @@ void AThrowableStone::BeginPlay()
 void AThrowableStone::OnStoneHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	if (!OtherActor || OtherActor == this) return;
+	if (!GetWorld()) return;
 	
 	// Check velocity to prevent tiny slides triggering massive sound waves repeatedly
 	float CurrentSpeed = GetVelocity().Size();
-	if (CurrentSpeed >= MinimumImpactVelocity)
+	const float CurrentTime = GetWorld()->GetTimeSeconds();
+	if (CurrentSpeed >= MinimumImpactVelocity && CurrentTime - LastImpactTime >= ImpactCooldown)
 	{
+		LastImpactTime = CurrentTime;
+
 		// Obtain the World Subsystem
 		USoundWaveManager* SoundManager = GetWorld()->GetSubsystem<USoundWaveManager>();
 		if (SoundManager)

@@ -24,6 +24,9 @@ protected:
     UPROPERTY(EditDefaultsOnly, Category = "AI")
     float PollingInterval = 0.5f;
 
+    UPROPERTY(EditDefaultsOnly, Category = "AI")
+    float AcceptanceRadius = 120.0f;
+
 private:
     float TimeSinceLastPoll;
 
