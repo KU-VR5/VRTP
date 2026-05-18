@@ -90,6 +90,24 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Echolocation|Visual")
     float OutlineLifetime = 0.08f;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Echolocation|Visual")
+    bool bDrawHorizontalSurfaceOutlines = true;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Echolocation|Visual", meta = (ClampMin = "1"))
+    int32 SurfaceRadialSamples = 6;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Echolocation|Visual")
+    float FloorTraceStartOffset = 80.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Echolocation|Visual")
+    float FloorTraceDepth = 220.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Echolocation|Visual")
+    float CeilingTraceStartOffset = 80.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Echolocation|Visual")
+    float CeilingTraceHeight = 900.0f;
+
 protected:
     UPROPERTY()
     UMaterialParameterCollection* EcholocationMPC;
