@@ -37,6 +37,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound Wave Settings")
 	float MinimumImpactVelocity = 50.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound Wave Settings")
+	float ImpactCooldown = 0.8f;
+
 	UFUNCTION()
 	void OnStoneHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
+private:
+	float LastImpactTime = -1000.0f;
 };

@@ -8,6 +8,8 @@ UVoiceDetectorComponent::UVoiceDetectorComponent()
 	PrimaryComponentTick.bCanEverTick = true;
     LoudnessThreshold = 0.3f; // 0 to 1 value
     EcholocationRadiusModifier = 2500.0f;
+    WaveCooldown = 1.0f;
+    VoiceWaveSpeed = 1800.0f;
     TimeSinceLastWave = 0.0f;
 }
 
@@ -19,6 +21,9 @@ void UVoiceDetectorComponent::BeginPlay()
     AudioCaptureComp = NewObject<UAudioCaptureComponent>(this, UAudioCaptureComponent::StaticClass());
     if (AudioCaptureComp)
     {
+        AudioCaptureComp->EnvelopeFollowerAttackTime = 10;
+        AudioCaptureComp->EnvelopeFollowerReleaseTime = 80;
+        AudioCaptureComp->OnAudioEnvelopeValue.AddDynamic(this, &UVoiceDetectorComponent::HandleAudioEnvelope);
         AudioCaptureComp->RegisterComponent();
         AudioCaptureComp->Start();
     }
@@ -28,9 +33,21 @@ void UVoiceDetectorComponent::TickComponent(float DeltaTime, ELevelTick TickType
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-    if (AudioCaptureComp)
+    TimeSinceLastWave += DeltaTime;
+}
+
+void UVoiceDetectorComponent::HandleAudioEnvelope(const float EnvelopeValue)
+{
+    if (!GetWorld() || TimeSinceLastWave < WaveCooldown) return;
+    if (EnvelopeValue < LoudnessThreshold) return;
+
+    TimeSinceLastWave = 0.0f;
+    OnVoiceLoudnessExceeded.Broadcast(EnvelopeValue);
+
+    if (USoundWaveManager* SoundManager = GetWorld()->GetSubsystem<USoundWaveManager>())
     {
-        // For UE5 AudioCapture plugin, we typically bind to OnAudioEnvelopeValue to get mic volume.
-        // We will expose this functionality so Blueprint can configure the capture source.
+        const FVector Origin = GetOwner() ? GetOwner()->GetActorLocation() : FVector::ZeroVector;
+        const float Radius = FMath::Clamp(EnvelopeValue, 0.0f, 1.0f) * EcholocationRadiusModifier;
+        SoundManager->SpawnSoundWave(Origin, Radius, VoiceWaveSpeed, EnvelopeValue, 100);
     }
 }

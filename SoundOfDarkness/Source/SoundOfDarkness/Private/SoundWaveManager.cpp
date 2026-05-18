@@ -4,6 +4,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMaterialLibrary.h"
 #include "Engine/World.h"
+#include "DrawDebugHelpers.h"
 
 void USoundWaveManager::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -53,6 +54,8 @@ void USoundWaveManager::Tick(float DeltaTime)
     if (bNeedsUpdate)
     {
         UpdateMaterialParameters();
+        DrawDebugRipples();
+        DrawEchoOutlines();
     }
 }
 
@@ -131,4 +134,147 @@ bool USoundWaveManager::GetHighestPrioritySound(FVector& OutLocation, int32& Out
     }
     
     return bFound;
+}
+
+void USoundWaveManager::DrawDebugRipples() const
+{
+    if (!bDrawDebugRipples || !GetWorld()) return;
+
+    for (int i = 0; i < MAX_WAVES; ++i)
+    {
+        if (!ActiveWaves[i].bIsActive) continue;
+
+        const FVector Center = ActiveWaves[i].Origin + FVector(0.0f, 0.0f, DebugRingHeightOffset);
+        DrawDebugCircle(
+            GetWorld(),
+            Center,
+            ActiveWaves[i].CurrentRadius,
+            96,
+            GetWaveColor(ActiveWaves[i]),
+            false,
+            0.05f,
+            0,
+            DebugRingThickness,
+            FVector::ForwardVector,
+            FVector::RightVector,
+            false
+        );
+    }
+}
+
+void USoundWaveManager::DrawEchoOutlines() const
+{
+    if (!bDrawEchoOutlines || !GetWorld()) return;
+
+    const int32 SafeRayCount = FMath::Max(OutlineRayCount, 16);
+    const int32 SafeVerticalSamples = FMath::Max(OutlineVerticalSamples, 1);
+    const int32 SafeSurfaceRadialSamples = FMath::Max(SurfaceRadialSamples, 1);
+
+    for (int WaveIndex = 0; WaveIndex < MAX_WAVES; ++WaveIndex)
+    {
+        const FSoundWaveRipple& Wave = ActiveWaves[WaveIndex];
+        if (!Wave.bIsActive || Wave.CurrentRadius <= 1.0f) continue;
+
+        const float Fade = FMath::Clamp(Wave.Intensity, 0.05f, 1.0f);
+        const FColor OutlineColor = GetWaveColor(Wave).WithAlpha(static_cast<uint8>(Fade * 255.0f));
+
+        for (int32 RayIndex = 0; RayIndex < SafeRayCount; ++RayIndex)
+        {
+            const float Angle = (TWO_PI * static_cast<float>(RayIndex)) / static_cast<float>(SafeRayCount);
+            const FVector Direction(FMath::Cos(Angle), FMath::Sin(Angle), 0.0f);
+
+            for (int32 HeightIndex = 0; HeightIndex < SafeVerticalSamples; ++HeightIndex)
+            {
+                const float HeightAlpha = SafeVerticalSamples == 1
+                    ? 0.5f
+                    : static_cast<float>(HeightIndex) / static_cast<float>(SafeVerticalSamples - 1);
+                const float ZOffset = OutlineSampleHeight + (HeightAlpha - 0.5f) * OutlineVerticalSpan;
+
+                const FVector Start = Wave.Origin + FVector(0.0f, 0.0f, ZOffset);
+                const FVector End = Start + Direction * Wave.CurrentRadius;
+
+                FHitResult Hit;
+                FCollisionQueryParams QueryParams(SCENE_QUERY_STAT(EcholocationOutline), false);
+                const bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, QueryParams);
+                if (!bHit) continue;
+
+                const FVector HitPoint = Hit.ImpactPoint;
+                const FVector Vertical = FVector::UpVector * (OutlineStrokeLength * 0.5f);
+                const FVector Tangent = FVector::CrossProduct(Hit.ImpactNormal, FVector::UpVector).GetSafeNormal() * (OutlineStrokeLength * 0.5f);
+                const FVector NormalStroke = Hit.ImpactNormal * (OutlineStrokeLength * 0.25f);
+
+                DrawDebugLine(GetWorld(), HitPoint - Vertical, HitPoint + Vertical, OutlineColor, false, OutlineLifetime, 0, OutlineThickness);
+
+                if (!Tangent.IsNearlyZero())
+                {
+                    DrawDebugLine(GetWorld(), HitPoint - Tangent, HitPoint + Tangent, OutlineColor, false, OutlineLifetime, 0, OutlineThickness);
+                }
+
+                DrawDebugLine(GetWorld(), HitPoint, HitPoint + NormalStroke, OutlineColor, false, OutlineLifetime, 0, OutlineThickness * 0.7f);
+            }
+
+            if (!bDrawHorizontalSurfaceOutlines) continue;
+
+            for (int32 RadiusIndex = 1; RadiusIndex <= SafeSurfaceRadialSamples; ++RadiusIndex)
+            {
+                const float RadiusAlpha = static_cast<float>(RadiusIndex) / static_cast<float>(SafeSurfaceRadialSamples);
+                const FVector SampleLocation = Wave.Origin + Direction * (Wave.CurrentRadius * RadiusAlpha);
+
+                const FVector FloorStart = SampleLocation + FVector(0.0f, 0.0f, FloorTraceStartOffset);
+                const FVector FloorEnd = SampleLocation - FVector(0.0f, 0.0f, FloorTraceDepth);
+                const FVector CeilingStart = SampleLocation + FVector(0.0f, 0.0f, CeilingTraceStartOffset);
+                const FVector CeilingEnd = SampleLocation + FVector(0.0f, 0.0f, CeilingTraceHeight);
+
+                FCollisionQueryParams QueryParams(SCENE_QUERY_STAT(EcholocationHorizontalSurface), false);
+
+                const auto DrawSurfaceMark = [this, &OutlineColor](const FHitResult& Hit)
+                {
+                    const FVector HitPoint = Hit.ImpactPoint;
+                    const FVector Normal = Hit.ImpactNormal.GetSafeNormal();
+                    const FVector AxisA = FVector::VectorPlaneProject(FVector::ForwardVector, Normal).GetSafeNormal() * (OutlineStrokeLength * 0.45f);
+                    const FVector AxisB = FVector::VectorPlaneProject(FVector::RightVector, Normal).GetSafeNormal() * (OutlineStrokeLength * 0.45f);
+                    const FVector NormalStroke = Normal * (OutlineStrokeLength * 0.2f);
+
+                    if (!AxisA.IsNearlyZero())
+                    {
+                        DrawDebugLine(GetWorld(), HitPoint - AxisA, HitPoint + AxisA, OutlineColor, false, OutlineLifetime, 0, OutlineThickness);
+                    }
+
+                    if (!AxisB.IsNearlyZero())
+                    {
+                        DrawDebugLine(GetWorld(), HitPoint - AxisB, HitPoint + AxisB, OutlineColor, false, OutlineLifetime, 0, OutlineThickness);
+                    }
+
+                    DrawDebugLine(GetWorld(), HitPoint, HitPoint + NormalStroke, OutlineColor, false, OutlineLifetime, 0, OutlineThickness * 0.7f);
+                };
+
+                FHitResult FloorHit;
+                if (GetWorld()->LineTraceSingleByChannel(FloorHit, FloorStart, FloorEnd, ECC_Visibility, QueryParams))
+                {
+                    DrawSurfaceMark(FloorHit);
+                }
+
+                FHitResult CeilingHit;
+                if (GetWorld()->LineTraceSingleByChannel(CeilingHit, CeilingStart, CeilingEnd, ECC_Visibility, QueryParams))
+                {
+                    DrawSurfaceMark(CeilingHit);
+                }
+            }
+        }
+    }
+}
+
+FColor USoundWaveManager::GetWaveColor(const FSoundWaveRipple& Wave) const
+{
+    if (Wave.Priority >= 100)
+    {
+        return FColor(210, 210, 210);
+    }
+
+    if (Wave.Priority >= 50)
+    {
+        return FColor(190, 190, 190);
+    }
+
+    return FColor(165, 165, 165);
 }
