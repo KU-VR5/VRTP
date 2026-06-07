@@ -32,6 +32,12 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Audio detection")
     float EcholocationRadiusModifier;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Audio detection")
+    float WaveCooldown;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Audio detection")
+    float VoiceWaveSpeed;
+
     UPROPERTY(BlueprintAssignable, Category = "Audio detection")
     FOnVoiceLoudnessExceeded OnVoiceLoudnessExceeded;
 
@@ -40,4 +46,7 @@ private:
     UAudioCaptureComponent* AudioCaptureComp;
 
     float TimeSinceLastWave;
+
+    UFUNCTION()
+    void HandleAudioEnvelope(const float EnvelopeValue);
 };

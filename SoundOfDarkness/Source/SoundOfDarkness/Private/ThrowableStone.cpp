@@ -2,6 +2,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Engine/World.h"
 #include "SoundWaveManager.h"
+#include "UObject/ConstructorHelpers.h"
 
 AThrowableStone::AThrowableStone()
 {
@@ -16,21 +17,41 @@ AThrowableStone::AThrowableStone()
 
 	// Bind hit function dynamically
 	StoneMesh->OnComponentHit.AddDynamic(this, &AThrowableStone::OnStoneHit);
+
+	static ConstructorHelpers::FClassFinder<UActorComponent> GrabComponentFinder(TEXT("/Game/XRFramework/Blueprints/BP_GrabComponent"));
+	if (GrabComponentFinder.Succeeded())
+	{
+		GrabComponentClass = GrabComponentFinder.Class;
+	}
 }
 
 void AThrowableStone::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (bAutoAddGrabComponent && GrabComponentClass && !FindComponentByClass(GrabComponentClass))
+	{
+		RuntimeGrabComponent = NewObject<UActorComponent>(this, GrabComponentClass, TEXT("GrabComponent"));
+		if (RuntimeGrabComponent)
+		{
+			AddInstanceComponent(RuntimeGrabComponent);
+			RuntimeGrabComponent->RegisterComponent();
+		}
+	}
 }
 
 void AThrowableStone::OnStoneHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	if (!OtherActor || OtherActor == this) return;
+	if (!GetWorld()) return;
 	
 	// Check velocity to prevent tiny slides triggering massive sound waves repeatedly
 	float CurrentSpeed = GetVelocity().Size();
-	if (CurrentSpeed >= MinimumImpactVelocity)
+	const float CurrentTime = GetWorld()->GetTimeSeconds();
+	if (CurrentSpeed >= MinimumImpactVelocity && CurrentTime - LastImpactTime >= ImpactCooldown)
 	{
+		LastImpactTime = CurrentTime;
+
 		// Obtain the World Subsystem
 		USoundWaveManager* SoundManager = GetWorld()->GetSubsystem<USoundWaveManager>();
 		if (SoundManager)
