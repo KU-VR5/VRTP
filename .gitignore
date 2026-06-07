@@ -1,0 +1,32 @@
+# Unreal Engine Gitignore
+
+# Binaries and build outputs
+Binaries/
+Build/
+DerivedDataCache/
+Intermediate/
+Saved/
+.vscode/
+.vs/
+*.sln
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Plugins
+Plugins/*/Binaries/
+Plugins/*/Intermediate/
+
+# System Files / Editor Files
+ActiveClassRedirects.ini
+AssetRegistryCache.bin
+Backup/
+*~
+*.log
+*.tmp
+*.crash
+
+# OS-specific files
+.DS_Store
+Thumbs.db
