@@ -4,6 +4,7 @@
 #include "ExitDoor.h"
 #include "GameFramework/Pawn.h"
 #include "MazeInventoryComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 AFusePanel::AFusePanel()
 {
@@ -24,6 +25,11 @@ AFusePanel::AFusePanel()
 void AFusePanel::BeginPlay()
 {
 	Super::BeginPlay();
+	if (!LinkedExitDoor && bAutoFindExitDoor)
+	{
+		LinkedExitDoor = Cast<AExitDoor>(UGameplayStatics::GetActorOfClass(this, AExitDoor::StaticClass()));
+	}
+
 	InsertTrigger->OnComponentBeginOverlap.AddDynamic(this, &AFusePanel::OnTriggerBeginOverlap);
 }
 

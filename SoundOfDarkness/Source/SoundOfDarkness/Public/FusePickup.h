@@ -6,6 +6,7 @@
 
 class UStaticMeshComponent;
 class USphereComponent;
+class UPointLightComponent;
 
 UCLASS()
 class SOUNDOFDARKNESS_API AFusePickup : public AActor
@@ -19,13 +20,31 @@ public:
 	UStaticMeshComponent* Mesh;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UPointLightComponent* FuseLight;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USphereComponent* PickupTrigger;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fuse|Visual")
+	bool bEnableFuseLight = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fuse|Visual", meta = (EditCondition = "bEnableFuseLight", ClampMin = "0.0"))
+	float FuseLightIntensity = 450.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fuse|Visual", meta = (EditCondition = "bEnableFuseLight", ClampMin = "0.0"))
+	float FuseLightRadius = 180.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fuse|Visual", meta = (EditCondition = "bEnableFuseLight"))
+	FLinearColor FuseLightColor = FLinearColor(1.0f, 0.78f, 0.08f, 1.0f);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fuse")
 	int32 FuseAmount = 1;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fuse")
 	bool bDestroyOnPickup = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fuse")
+	bool bCreateInventoryIfMissing = true;
 
 	UFUNCTION(BlueprintCallable, Category = "Fuse")
 	void CollectFuse(AActor* Collector);

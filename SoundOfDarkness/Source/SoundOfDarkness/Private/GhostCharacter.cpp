@@ -59,5 +59,6 @@ void AGhostCharacter::CheckCatchPlayer()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Player caught by ghost."));
 		bCanCatchPlayer = false;
+		OnGhostCaughtPlayer.Broadcast(PlayerPawn);
 	}
 }

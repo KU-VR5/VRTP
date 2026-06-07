@@ -26,6 +26,9 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Escape")
 	FOnPlayerEscaped OnPlayerEscaped;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Escape")
+	bool bHasEscaped = false;
+
 protected:
 	virtual void BeginPlay() override;
 

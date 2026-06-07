@@ -5,6 +5,7 @@
 #include "ThrowableStone.generated.h"
 
 class UStaticMeshComponent;
+class UActorComponent;
 
 UCLASS()
 class SOUNDOFDARKNESS_API AThrowableStone : public AActor
@@ -40,9 +41,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound Wave Settings")
 	float ImpactCooldown = 0.8f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VR Interaction")
+	bool bAutoAddGrabComponent = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VR Interaction")
+	TSubclassOf<UActorComponent> GrabComponentClass;
+
 	UFUNCTION()
 	void OnStoneHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 private:
 	float LastImpactTime = -1000.0f;
+
+	UPROPERTY()
+	UActorComponent* RuntimeGrabComponent = nullptr;
 };

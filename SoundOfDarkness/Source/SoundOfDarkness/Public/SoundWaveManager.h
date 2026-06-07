@@ -6,6 +6,14 @@
 
 class UMaterialParameterCollection;
 
+UENUM(BlueprintType)
+enum class EEcholocationVisualMode : uint8
+{
+    ShaderOnly UMETA(DisplayName = "Shader Only"),
+    DebugLines UMETA(DisplayName = "Debug Lines"),
+    ShaderAndDebugLines UMETA(DisplayName = "Shader And Debug Lines")
+};
+
 USTRUCT(BlueprintType)
 struct FSoundWaveRipple
 {
@@ -58,10 +66,16 @@ public:
     bool GetHighestPrioritySound(FVector& OutLocation, int32& OutPriority) const;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Echolocation|Visual")
+    EEcholocationVisualMode VisualMode = EEcholocationVisualMode::ShaderAndDebugLines;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Echolocation|Visual")
     bool bDrawDebugRipples = false;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Echolocation|Visual")
     bool bDrawEchoOutlines = true;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Echolocation|Visual", meta = (ClampMin = "0.0"))
+    float DebugTraceInterval = 0.05f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Echolocation|Visual")
     float DebugRingHeightOffset = 8.0f;
@@ -88,7 +102,7 @@ public:
     float OutlineThickness = 2.5f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Echolocation|Visual")
-    float OutlineLifetime = 0.08f;
+    float OutlineLifetime = 0.2f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Echolocation|Visual")
     bool bDrawHorizontalSurfaceOutlines = true;
@@ -115,6 +129,7 @@ protected:
 private:
     static const int32 MAX_WAVES = 8;
     FSoundWaveRipple ActiveWaves[MAX_WAVES];
+    float TimeSinceLastDebugTrace = 0.0f;
 
     void UpdateMaterialParameters();
     void DrawDebugRipples() const;

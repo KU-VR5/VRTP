@@ -20,12 +20,24 @@ void UMazeNoiseComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 
 	TimeSinceLastFootstep += DeltaTime;
 	const float Speed2D = GetOwner()->GetVelocity().Size2D();
+	const bool bIsMoving = Speed2D >= MinMoveSpeed;
 
-	if (Speed2D >= MinMoveSpeed && TimeSinceLastFootstep >= FootstepInterval)
+	if (bIsMoving && !bWasMoving)
 	{
 		TimeSinceLastFootstep = 0.0f;
 		EmitNoiseWave(FootstepWaveRadius, FootstepWaveSpeed, FootstepWaveIntensity, FootstepPriority);
 	}
+	else if (bIsMoving && TimeSinceLastFootstep >= FootstepInterval)
+	{
+		TimeSinceLastFootstep = 0.0f;
+		EmitNoiseWave(FootstepWaveRadius, FootstepWaveSpeed, FootstepWaveIntensity, FootstepPriority);
+	}
+	else if (!bIsMoving)
+	{
+		TimeSinceLastFootstep = FootstepInterval;
+	}
+
+	bWasMoving = bIsMoving;
 }
 
 void UMazeNoiseComponent::EmitNoiseWave(float Radius, float Speed, float Intensity, int32 Priority)

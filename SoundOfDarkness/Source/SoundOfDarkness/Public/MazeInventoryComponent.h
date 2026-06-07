@@ -23,6 +23,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Maze Inventory")
 	int32 GetFuseCount() const { return FuseCount; }
 
+	UFUNCTION(BlueprintCallable, Category = "Maze Inventory")
+	void ResetInventory();
+
 	UPROPERTY(BlueprintAssignable, Category = "Maze Inventory")
 	FOnFuseCountChanged OnFuseCountChanged;
 

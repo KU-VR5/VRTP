@@ -25,20 +25,21 @@ public:
 	float MinMoveSpeed = 20.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Maze Noise|Footsteps")
-	float FootstepInterval = 0.85f;
+	float FootstepInterval = 0.45f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Maze Noise|Footsteps")
-	float FootstepWaveRadius = 900.0f;
+	float FootstepWaveRadius = 1100.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Maze Noise|Footsteps")
 	float FootstepWaveSpeed = 700.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Maze Noise|Footsteps")
-	float FootstepWaveIntensity = 0.7f;
+	float FootstepWaveIntensity = 0.9f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Maze Noise|Footsteps")
 	int32 FootstepPriority = 25;
 
 private:
 	float TimeSinceLastFootstep = 0.0f;
+	bool bWasMoving = false;
 };

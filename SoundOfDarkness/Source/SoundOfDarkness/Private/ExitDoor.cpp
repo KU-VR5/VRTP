@@ -27,5 +27,8 @@ void AExitDoor::Tick(float DeltaTime)
 
 void AExitDoor::OpenDoor()
 {
+	if (bIsOpen) return;
+
 	bIsOpen = true;
+	OnExitDoorOpened.Broadcast();
 }

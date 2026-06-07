@@ -23,9 +23,11 @@ void AEscapeZone::BeginPlay()
 
 void AEscapeZone::OnTriggerBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if (bHasEscaped) return;
 	if (!Cast<APawn>(OtherActor)) return;
 	if (RequiredOpenDoor && !RequiredOpenDoor->bIsOpen) return;
 
+	bHasEscaped = true;
 	UE_LOG(LogTemp, Log, TEXT("Player escaped the maze."));
 	OnPlayerEscaped.Broadcast(OtherActor);
 }

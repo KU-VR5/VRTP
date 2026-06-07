@@ -19,3 +19,9 @@ bool UMazeInventoryComponent::ConsumeFuse(int32 Amount)
 	OnFuseCountChanged.Broadcast(FuseCount);
 	return true;
 }
+
+void UMazeInventoryComponent::ResetInventory()
+{
+	FuseCount = 0;
+	OnFuseCountChanged.Broadcast(FuseCount);
+}

@@ -54,8 +54,18 @@ void USoundWaveManager::Tick(float DeltaTime)
     if (bNeedsUpdate)
     {
         UpdateMaterialParameters();
-        DrawDebugRipples();
-        DrawEchoOutlines();
+
+        const bool bShouldDrawDebug = VisualMode != EEcholocationVisualMode::ShaderOnly;
+        if (bShouldDrawDebug)
+        {
+            TimeSinceLastDebugTrace += DeltaTime;
+            if (DebugTraceInterval <= 0.0f || TimeSinceLastDebugTrace >= DebugTraceInterval)
+            {
+                TimeSinceLastDebugTrace = 0.0f;
+                DrawDebugRipples();
+                DrawEchoOutlines();
+            }
+        }
     }
 }
 
@@ -96,12 +106,18 @@ void USoundWaveManager::UpdateMaterialParameters()
 {
     if (!EcholocationMPC || !GetWorld()) return;
 
+    int32 ActiveWaveCount = 0;
+
     // Send array data to shader vectors, e.g. Wave0 (Origin, radius), etc.
     // For a parameter collection, we can map X,Y,Z of a vector to Origin, and W to Radius/Intensity encoded
     for (int i = 0; i < MAX_WAVES; ++i)
     {
         FName ParamNameLocation = FName(*FString::Printf(TEXT("WaveLocation_%d"), i));
         FName ParamNameData = FName(*FString::Printf(TEXT("WaveData_%d"), i)); // R = CurrentRadius, G = MaxRadius, B = Intensity
+        if (ActiveWaves[i].bIsActive)
+        {
+            ++ActiveWaveCount;
+        }
 
         FVector Location = ActiveWaves[i].bIsActive ? ActiveWaves[i].Origin : FVector::ZeroVector;
         FVector Data = ActiveWaves[i].bIsActive 
@@ -111,6 +127,9 @@ void USoundWaveManager::UpdateMaterialParameters()
         UKismetMaterialLibrary::SetVectorParameterValue(GetWorld(), EcholocationMPC, ParamNameLocation, FLinearColor(Location.X, Location.Y, Location.Z, 1.0f));
         UKismetMaterialLibrary::SetVectorParameterValue(GetWorld(), EcholocationMPC, ParamNameData, FLinearColor(Data.X, Data.Y, Data.Z, 1.0f));
     }
+
+    UKismetMaterialLibrary::SetScalarParameterValue(GetWorld(), EcholocationMPC, FName(TEXT("ActiveWaveCount")), static_cast<float>(ActiveWaveCount));
+    UKismetMaterialLibrary::SetScalarParameterValue(GetWorld(), EcholocationMPC, FName(TEXT("MaxWaveCount")), static_cast<float>(MAX_WAVES));
 }
 
 bool USoundWaveManager::GetHighestPrioritySound(FVector& OutLocation, int32& OutPriority) const
@@ -138,7 +157,7 @@ bool USoundWaveManager::GetHighestPrioritySound(FVector& OutLocation, int32& Out
 
 void USoundWaveManager::DrawDebugRipples() const
 {
-    if (!bDrawDebugRipples || !GetWorld()) return;
+    if (!bDrawDebugRipples || !GetWorld() || VisualMode == EEcholocationVisualMode::ShaderOnly) return;
 
     for (int i = 0; i < MAX_WAVES; ++i)
     {
@@ -164,7 +183,7 @@ void USoundWaveManager::DrawDebugRipples() const
 
 void USoundWaveManager::DrawEchoOutlines() const
 {
-    if (!bDrawEchoOutlines || !GetWorld()) return;
+    if (!bDrawEchoOutlines || !GetWorld() || VisualMode == EEcholocationVisualMode::ShaderOnly) return;
 
     const int32 SafeRayCount = FMath::Max(OutlineRayCount, 16);
     const int32 SafeVerticalSamples = FMath::Max(OutlineVerticalSamples, 1);

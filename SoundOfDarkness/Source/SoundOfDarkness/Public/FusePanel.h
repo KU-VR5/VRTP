@@ -34,6 +34,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fuse Panel")
 	AExitDoor* LinkedExitDoor = nullptr;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fuse Panel")
+	bool bAutoFindExitDoor = true;
+
 	UPROPERTY(BlueprintAssignable, Category = "Fuse Panel")
 	FOnFuseInserted OnFuseInserted;
 

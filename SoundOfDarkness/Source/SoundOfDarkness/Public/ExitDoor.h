@@ -6,6 +6,8 @@
 
 class UStaticMeshComponent;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnExitDoorOpened);
+
 UCLASS()
 class SOUNDOFDARKNESS_API AExitDoor : public AActor
 {
@@ -29,6 +31,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Exit Door")
 	bool bIsOpen = false;
+
+	UPROPERTY(BlueprintAssignable, Category = "Exit Door")
+	FOnExitDoorOpened OnExitDoorOpened;
 
 protected:
 	virtual void BeginPlay() override;
