@@ -5,6 +5,7 @@
 #include "GameFramework/Pawn.h"
 #include "MazeInventoryComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "UObject/ConstructorHelpers.h"
 
 AFusePanel::AFusePanel()
 {
@@ -20,6 +21,12 @@ AFusePanel::AFusePanel()
 	PanelMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PanelMesh"));
 	PanelMesh->SetupAttachment(RootComponent);
 	PanelMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> FuseBoxMeshFinder(TEXT("/Game/Models/Fusebox/WallFuseBox.WallFuseBox"));
+	if (FuseBoxMeshFinder.Succeeded())
+	{
+		PanelMesh->SetStaticMesh(FuseBoxMeshFinder.Object);
+	}
 }
 
 void AFusePanel::BeginPlay()

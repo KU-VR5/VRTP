@@ -17,10 +17,31 @@ AFusePickup::AFusePickup()
 	PickupTrigger->SetCollisionResponseToAllChannels(ECR_Ignore);
 	PickupTrigger->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 
+	// Initialize and attach the 5 parts
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	Mesh->SetupAttachment(RootComponent);
 	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	Mesh->SetRelativeScale3D(FVector(0.25f, 0.25f, 0.25f));
+
+	MeshLight = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshLight"));
+	MeshLight->SetupAttachment(RootComponent);
+	MeshLight->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	MeshLight->SetRelativeScale3D(FVector(0.25f, 0.25f, 0.25f));
+
+	MeshPoles = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshPoles"));
+	MeshPoles->SetupAttachment(RootComponent);
+	MeshPoles->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	MeshPoles->SetRelativeScale3D(FVector(0.25f, 0.25f, 0.25f));
+
+	MeshGasket = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshGasket"));
+	MeshGasket->SetupAttachment(RootComponent);
+	MeshGasket->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	MeshGasket->SetRelativeScale3D(FVector(0.25f, 0.25f, 0.25f));
+
+	MeshGlass = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshGlass"));
+	MeshGlass->SetupAttachment(RootComponent);
+	MeshGlass->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	MeshGlass->SetRelativeScale3D(FVector(0.25f, 0.25f, 0.25f));
 
 	FuseLight = CreateDefaultSubobject<UPointLightComponent>(TEXT("FuseLight"));
 	FuseLight->SetupAttachment(RootComponent);
@@ -32,10 +53,35 @@ AFusePickup::AFusePickup()
 	FuseLight->SetCastShadows(false);
 	FuseLight->SetVisibility(bEnableFuseLight);
 
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeMesh(TEXT("/Engine/BasicShapes/Cube.Cube"));
-	if (CubeMesh.Succeeded())
+	// Load the 5 mesh files
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshCoverFinder(TEXT("/Game/Models/Fuse/fuse_cover1.fuse_cover1"));
+	if (MeshCoverFinder.Succeeded())
 	{
-		Mesh->SetStaticMesh(CubeMesh.Object);
+		Mesh->SetStaticMesh(MeshCoverFinder.Object);
+	}
+
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshLightFinder(TEXT("/Game/Models/Fuse/fuse_light1.fuse_light1"));
+	if (MeshLightFinder.Succeeded())
+	{
+		MeshLight->SetStaticMesh(MeshLightFinder.Object);
+	}
+
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshPolesFinder(TEXT("/Game/Models/Fuse/fuse_poles1.fuse_poles1"));
+	if (MeshPolesFinder.Succeeded())
+	{
+		MeshPoles->SetStaticMesh(MeshPolesFinder.Object);
+	}
+
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshGasketFinder(TEXT("/Game/Models/Fuse/gasket1.gasket1"));
+	if (MeshGasketFinder.Succeeded())
+	{
+		MeshGasket->SetStaticMesh(MeshGasketFinder.Object);
+	}
+
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshGlassFinder(TEXT("/Game/Models/Fuse/glass1.glass1"));
+	if (MeshGlassFinder.Succeeded())
+	{
+		MeshGlass->SetStaticMesh(MeshGlassFinder.Object);
 	}
 }
 
