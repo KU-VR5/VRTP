@@ -1,0 +1,6 @@
+Asset: Ghost
+File: ghost_catch_oga_cc0.wav
+Author: Ogrebane
+Source: https://opengameart.org/content/ghost
+License: CC0
+Downloaded: 2026-06-08

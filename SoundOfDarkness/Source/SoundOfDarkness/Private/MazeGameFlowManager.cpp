@@ -4,6 +4,8 @@
 #include "EngineUtils.h"
 #include "Kismet/GameplayStatics.h"
 #include "Blueprint/UserWidget.h"
+#include "GameFramework/PlayerController.h"
+#include "TimerManager.h"
 
 AMazeGameFlowManager::AMazeGameFlowManager()
 {
@@ -37,6 +39,17 @@ void AMazeGameFlowManager::WinGame()
 void AMazeGameFlowManager::LoseGame()
 {
 	SetState(EMazeGameFlowState::Lost);
+
+	if (!bOpenLoseLevelOnLose || LoseLevelName.IsNone() || !GetWorld()) return;
+
+	const float EffectiveLoseLevelDelay = FMath::Max(LoseLevelDelay, MinLoseLevelDelay);
+	if (EffectiveLoseLevelDelay <= 0.0f)
+	{
+		OpenLoseLevel();
+		return;
+	}
+
+	GetWorldTimerManager().SetTimer(LoseLevelTimerHandle, this, &AMazeGameFlowManager::OpenLoseLevel, EffectiveLoseLevelDelay, false);
 }
 
 void AMazeGameFlowManager::RestartLevel()
@@ -79,7 +92,22 @@ void AMazeGameFlowManager::HandlePlayerEscaped(AActor* PlayerActor)
 
 void AMazeGameFlowManager::HandleGhostCaughtPlayer(APawn* PlayerPawn)
 {
+	if (PlayerPawn)
+	{
+		if (APlayerController* PlayerController = Cast<APlayerController>(PlayerPawn->GetController()))
+		{
+			PlayerPawn->DisableInput(PlayerController);
+		}
+	}
+
 	LoseGame();
+}
+
+void AMazeGameFlowManager::OpenLoseLevel()
+{
+	if (!GetWorld() || LoseLevelName.IsNone()) return;
+
+	UGameplayStatics::OpenLevel(this, LoseLevelName);
 }
 
 void AMazeGameFlowManager::ShowWidgetForState(EMazeGameFlowState NewState)

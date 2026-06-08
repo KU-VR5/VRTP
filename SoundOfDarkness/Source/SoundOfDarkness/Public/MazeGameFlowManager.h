@@ -44,6 +44,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Flow|UI")
 	TSubclassOf<UUserWidget> LoseWidgetClass;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Flow|Lose")
+	bool bOpenLoseLevelOnLose = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Flow|Lose")
+	FName LoseLevelName = TEXT("Map_Gameover");
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Flow|Lose", meta = (ClampMin = "0.0"))
+	float LoseLevelDelay = 2.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Flow|Lose", meta = (ClampMin = "0.0"))
+	float MinLoseLevelDelay = 2.0f;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Flow")
 	EMazeGameFlowState CurrentState = EMazeGameFlowState::MainMenu;
 
@@ -72,9 +84,12 @@ private:
 	UFUNCTION()
 	void HandleGhostCaughtPlayer(APawn* PlayerPawn);
 
+	void OpenLoseLevel();
 	void ShowWidgetForState(EMazeGameFlowState NewState);
 	void ClearCurrentWidget();
 
 	UPROPERTY()
 	UUserWidget* CurrentWidget = nullptr;
+
+	FTimerHandle LoseLevelTimerHandle;
 };

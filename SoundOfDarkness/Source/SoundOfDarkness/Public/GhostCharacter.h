@@ -4,6 +4,8 @@
 #include "GameFramework/Character.h"
 #include "GhostCharacter.generated.h"
 
+class USoundBase;
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGhostCaughtPlayer, APawn*, PlayerPawn);
 
 UCLASS()
@@ -35,6 +37,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Ghost")
 	bool bCanCatchPlayer = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Ghost|Audio")
+	USoundBase* CatchSound = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Ghost|Audio", meta = (ClampMin = "0.0"))
+	float CatchSoundVolume = 1.0f;
 
 	UPROPERTY(BlueprintAssignable, Category = "AI|Ghost")
 	FOnGhostCaughtPlayer OnGhostCaughtPlayer;

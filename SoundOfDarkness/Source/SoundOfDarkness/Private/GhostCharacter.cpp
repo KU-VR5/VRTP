@@ -1,12 +1,26 @@
 #include "GhostCharacter.h"
+#include "UObject/ConstructorHelpers.h"
+#include "Components/AudioComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Sound/SoundBase.h"
 #include "TimerManager.h"
+
+namespace
+{
+	const TCHAR* DefaultGhostCatchSoundPath = TEXT("/Game/Sound/ghost_catch_oga_cc0.ghost_catch_oga_cc0");
+}
 
 AGhostCharacter::AGhostCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	bIsStunned = false;
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> DefaultCatchSound(DefaultGhostCatchSoundPath);
+	if (DefaultCatchSound.Succeeded())
+	{
+		CatchSound = DefaultCatchSound.Object;
+	}
 }
 
 void AGhostCharacter::BeginPlay()
@@ -16,6 +30,11 @@ void AGhostCharacter::BeginPlay()
 	if (UCharacterMovementComponent* Movement = GetCharacterMovement())
 	{
 		OriginalMaxWalkSpeed = Movement->MaxWalkSpeed;
+	}
+
+	if (!CatchSound)
+	{
+		CatchSound = LoadObject<USoundBase>(nullptr, DefaultGhostCatchSoundPath);
 	}
 }
 
@@ -59,6 +78,20 @@ void AGhostCharacter::CheckCatchPlayer()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Player caught by ghost."));
 		bCanCatchPlayer = false;
+		if (!CatchSound)
+		{
+			CatchSound = LoadObject<USoundBase>(nullptr, DefaultGhostCatchSoundPath);
+		}
+
+		if (CatchSound)
+		{
+			UAudioComponent* CatchAudio = UGameplayStatics::SpawnSound2D(this, CatchSound, CatchSoundVolume, 1.0f, 0.0f, nullptr, true);
+			UE_LOG(LogTemp, Warning, TEXT("Spawned ghost catch sound: %s"), CatchAudio ? TEXT("success") : TEXT("failed"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Ghost catch sound is missing. Expected asset: %s"), DefaultGhostCatchSoundPath);
+		}
 		OnGhostCaughtPlayer.Broadcast(PlayerPawn);
 	}
 }
