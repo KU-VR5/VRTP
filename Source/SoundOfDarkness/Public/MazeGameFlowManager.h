@@ -77,6 +77,4 @@ private:
 
 	UPROPERTY()
 	UUserWidget* CurrentWidget = nullptr;
-
-	TSharedPtr<SWidget> GameOverWidget;
 };

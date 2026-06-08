@@ -21,27 +21,27 @@ AFusePickup::AFusePickup()
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	Mesh->SetupAttachment(RootComponent);
 	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	Mesh->SetRelativeScale3D(FVector(0.25f, 0.25f, 0.25f));
+	Mesh->SetRelativeScale3D(FVector(3.0f, 3.0f, 3.0f));
 
 	MeshLight = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshLight"));
 	MeshLight->SetupAttachment(RootComponent);
 	MeshLight->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	MeshLight->SetRelativeScale3D(FVector(0.25f, 0.25f, 0.25f));
+	MeshLight->SetRelativeScale3D(FVector(3.0f, 3.0f, 3.0f));
 
 	MeshPoles = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshPoles"));
 	MeshPoles->SetupAttachment(RootComponent);
 	MeshPoles->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	MeshPoles->SetRelativeScale3D(FVector(0.25f, 0.25f, 0.25f));
+	MeshPoles->SetRelativeScale3D(FVector(3.0f, 3.0f, 3.0f));
 
 	MeshGasket = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshGasket"));
 	MeshGasket->SetupAttachment(RootComponent);
 	MeshGasket->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	MeshGasket->SetRelativeScale3D(FVector(0.25f, 0.25f, 0.25f));
+	MeshGasket->SetRelativeScale3D(FVector(3.0f, 3.0f, 3.0f));
 
 	MeshGlass = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshGlass"));
 	MeshGlass->SetupAttachment(RootComponent);
 	MeshGlass->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	MeshGlass->SetRelativeScale3D(FVector(0.25f, 0.25f, 0.25f));
+	MeshGlass->SetRelativeScale3D(FVector(3.0f, 3.0f, 3.0f));
 
 	FuseLight = CreateDefaultSubobject<UPointLightComponent>(TEXT("FuseLight"));
 	FuseLight->SetupAttachment(RootComponent);
